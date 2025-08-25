@@ -1,1 +1,1 @@
-*.sh text/plain
+*.sh		text eol=lf
