@@ -3,7 +3,21 @@ set -e
 
 REPO="la-rebelion/hapimcp"
 BINARY="hapi"
-DEFAULT_VERSION="v0.2.0"
+DEFAULT_VERSION="v0.2.1"
+
+# Function to fetch the latest version from GitHub
+fetch_latest_version() {
+  echo "Fetching latest version information..."
+  LATEST_VERSION=$(curl -fsSL "https://raw.githubusercontent.com/$REPO/refs/heads/main/latest" | tr -d '[:space:]')
+  
+  if [[ -z "$LATEST_VERSION" ]]; then
+    echo "Could not fetch latest version, falling back to default: $DEFAULT_VERSION"
+    echo "$DEFAULT_VERSION"
+  else
+    echo "Latest version: $LATEST_VERSION"
+    echo "$LATEST_VERSION"
+  fi
+}
 
 # Parse arguments for --version
 while [[ $# -gt 0 ]]; do
@@ -18,7 +32,10 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-VERSION=${VERSION:-$DEFAULT_VERSION}
+# If no version specified, fetch the latest version
+if [[ -z "$VERSION" ]]; then
+  VERSION=$(fetch_latest_version || echo "$DEFAULT_VERSION")
+fi
 
 detect_platform() {
   OS=$(uname | tr '[:upper:]' '[:lower:]')
@@ -76,6 +93,12 @@ download_and_verify() {
   "/usr/local/bin/$BINARY$EXT" --version || true
 }
 
+setup_env() {
+  HAPI_HOME="$HOME/.hapi"
+  mkdir -p "$HAPI_HOME/config" "$HAPI_HOME/specs" "$HAPI_HOME/src" "$HAPI_HOME/certs"
+  echo "Created HAPI environment at $HAPI_HOME"
+}
+
 example_commands() {
   echo -e "\nExample commands:"
   echo "  $BINARY --help"
@@ -85,4 +108,5 @@ example_commands() {
 }
 
 download_and_verify
+setup_env
 example_commands
