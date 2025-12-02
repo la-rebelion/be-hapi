@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 set -e
 
-REPO="la-rebelion/hapimcp"
-BINARY="hapi"
-DEFAULT_VERSION="v0.5.0"
+REPO="la-rebelion/qbot-cli"
+BINARY="qbot"
+DEFAULT_VERSION="v0.1.0"
 
 # Function to fetch the latest version from GitHub
 fetch_latest_version() {
   echo "Fetching latest version information..."
-  local app_name="${1:-hapi}"
+  local app_name="${1:-qbot}"
   local latest_content
   latest_content=$(curl -fsSL "https://raw.githubusercontent.com/$REPO/refs/heads/main/latest" || true)
 
@@ -48,9 +48,9 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# If no version specified, fetch the latest version of hapi
+# If no version specified, fetch the latest version of qbot
 if [[ -z "$VERSION" ]]; then
-  VERSION=$(fetch_latest_version "hapi" || echo "$DEFAULT_VERSION")
+  VERSION=$(fetch_latest_version "qbot" || echo "$DEFAULT_VERSION")
 fi
 
 detect_platform() {
@@ -110,9 +110,9 @@ download_and_verify() {
 }
 
 setup_env() {
-  HAPI_HOME="$HOME/.hapi"
-  mkdir -p "$HAPI_HOME/config" "$HAPI_HOME/specs" "$HAPI_HOME/src" "$HAPI_HOME/certs"
-  echo "Created HAPI environment at $HAPI_HOME"
+  QBOT_HOME="$HOME/.qbot"
+  mkdir -p "$QBOT_HOME/config" "$QBOT_HOME/specs" "$QBOT_HOME/src" "$QBOT_HOME/certs"
+  echo "Created QBot environment at $QBOT_HOME"
 }
 
 example_commands() {

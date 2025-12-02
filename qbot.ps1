@@ -1,8 +1,8 @@
-# HAPI PowerShell Installer Script
+# QBot PowerShell Installer Script
 
-$Repo = "la-rebelion/hapimcp"
-$Binary = "hapi"
-$DefaultVersion = "v0.5.0"
+$Repo = "la-rebelion/qbot-cli"
+$Binary = "qbot"
+$DefaultVersion = "v0.1.0"
 $Version = $null
 
 # Function to fetch the latest version from GitHub
@@ -16,16 +16,16 @@ function Get-LatestVersion {
             return $DefaultVersion
         }
 
-        # Extract version for 'hapi' from lines like: name:version
-        $line = ($content -split "`n") | Where-Object { $_ -match '^\s*hapi\s*:' } | Select-Object -First 1
+        # Extract version for 'qbot' from lines like: name:version
+        $line = ($content -split "`n") | Where-Object { $_ -match '^\s*qbot\s*:' } | Select-Object -First 1
         if (-not $line) {
-            Write-Host "No version found for hapi, falling back to default: $DefaultVersion"
+            Write-Host "No version found for qbot, falling back to default: $DefaultVersion"
             return $DefaultVersion
         }
 
         $rawVersion = ($line -split ':')[1].Trim()
         if ([string]::IsNullOrWhiteSpace($rawVersion)) {
-            Write-Host "No version found for hapi, falling back to default: $DefaultVersion"
+            Write-Host "No version found for qbot, falling back to default: $DefaultVersion"
             return $DefaultVersion
         }
 
@@ -33,7 +33,7 @@ function Get-LatestVersion {
             $rawVersion = "v$rawVersion"
         }
 
-        Write-Host "Latest hapi version: $rawVersion"
+        Write-Host "Latest qbot version: $rawVersion"
         return $rawVersion
     } catch {
         Write-Host "Error fetching latest version, falling back to default: $DefaultVersion"
@@ -124,7 +124,7 @@ function Install-Binary {
     $input.Close()
     
     # Install binary
-    $InstallDir = "$env:LOCALAPPDATA\Programs\hapi"
+    $InstallDir = "$env:LOCALAPPDATA\Programs\qbot"
     $DestPath = "$InstallDir\$Binary.exe"
     
     # Create install directory if it doesn't exist
@@ -160,21 +160,21 @@ function Install-Binary {
 
 # Setup environment
 function Initialize-Environment {
-    $HapiHome = "$env:USERPROFILE\.hapi"
-    
-    if (-not (Test-Path $HapiHome)) {
-        New-Item -ItemType Directory -Path $HapiHome | Out-Null
+    $qbotHome = "$env:USERPROFILE\.qbot"
+
+    if (-not (Test-Path $qbotHome)) {
+        New-Item -ItemType Directory -Path $qbotHome | Out-Null
     }
     
     $Folders = @("config", "specs", "src", "certs")
     foreach ($Folder in $Folders) {
-        $Path = Join-Path $HapiHome $Folder
+        $Path = Join-Path $qbotHome $Folder
         if (-not (Test-Path $Path)) {
             New-Item -ItemType Directory -Path $Path | Out-Null
         }
     }
-    
-    Write-Host "Created HAPI environment at $HapiHome"
+
+    Write-Host "Created QBot environment at $qbotHome"
 }
 
 # Example commands
