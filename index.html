@@ -1,1 +1,371 @@
-<meta http-equiv="refresh" content="0; url=https://github.com/la-rebelion/be-hapi/main/hapi.sh">
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HAPI MCP Tools - Model Context Protocol CLI</title>
+  <meta name="description" content="Transform OpenAPI specs into intelligent MCP servers. Command-line tool for managing HAPI MCP projects." />
+  <meta name="author" content="La Rebelion Labs" />
+
+  <!-- OG metadata -->
+  <meta property="og:title" content="HAPI MCP Tools - Model Context Protocol CLI" />
+  <meta property="og:description" content="Transform OpenAPI specs into intelligent MCP servers. Command-line tool for managing HAPI MCP projects." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://cdn.statically.io/img/cdn.rebelion.la/img/mcp/hapi-mcp-diagram.svg" />
+
+  <!-- Twitter Card metadata -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@LaRebelionLabs" />
+  <meta name="twitter:image" content="https://cdn.statically.io/img/cdn.rebelion.la/img/mcp/hapi-mcp-diagram.svg" />
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-13ZPL5T9NN"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-13ZPL5T9NN');
+  </script>
+
+  <!-- Start of HubSpot Embed Code -->
+  <script type="text/javascript" id="hs-script-loader" async defer src="//js.hs-scripts.com/21339207.js"></script>
+  <!-- End of HubSpot Embed Code -->
+
+  <!-- Auto redirect after 10 seconds -->
+  <meta http-equiv="refresh" content="10; url=https://hapi.mcp.com.ai" />
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #1193b0;
+      --secondary: #da7756;
+      --bg-dark: #16212e;
+      --bg-card: #1a2635;
+      --text-primary: #f5f5f7;
+      --text-muted: #a0aec0;
+      --border: #2d3748;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(180deg, var(--bg-dark), #0f1620);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 800px;
+      width: 100%;
+      text-align: center;
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 2rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      font-weight: bold;
+      box-shadow: 0 10px 30px -10px rgba(17, 147, 176, 0.3);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 10px 30px -10px rgba(17, 147, 176, 0.3);
+      }
+      50% {
+        transform: scale(1.05);
+        box-shadow: 0 15px 40px -10px rgba(17, 147, 176, 0.5);
+      }
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 1.125rem;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+
+    .redirect-notice {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 3rem;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      text-align: left;
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      border-color: var(--primary);
+      box-shadow: 0 10px 30px -10px rgba(17, 147, 176, 0.2);
+    }
+
+    .card h2 {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-primary);
+    }
+
+    .card-icon {
+      width: 24px;
+      height: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .code-block {
+      background: #0f1620;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 0.9rem;
+      overflow-x: auto;
+      margin-bottom: 0.75rem;
+      position: relative;
+      cursor: pointer;
+      transition: border-color 0.2s ease;
+    }
+
+    .code-block:hover {
+      border-color: var(--primary);
+    }
+
+    .code-block code {
+      color: #e0e0e0;
+    }
+
+    .code-comment {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+    }
+
+    .button {
+      display: inline-block;
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 1.125rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(17, 147, 176, 0.3);
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(17, 147, 176, 0.4);
+    }
+
+    .footer {
+      margin-top: 3rem;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .footer a {
+      color: var(--primary);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .footer a:hover {
+      color: var(--secondary);
+    }
+
+    @media (max-width: 640px) {
+      h1 {
+        font-size: 2rem;
+      }
+
+      .card {
+        padding: 1.5rem;
+      }
+
+      .code-block {
+        font-size: 0.8rem;
+        padding: 0.75rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="logo">🚀</div>
+    
+    <h1>HAPI MCP Tools</h1>
+    <p class="subtitle">Transform OpenAPI specs into intelligent MCP servers</p>
+    <p class="subtitle" style="margin-top: 0.5rem; font-size: 0.95rem; opacity: 0.8;">
+      Know more about MCP toolkits at <a href="https://mcp.com.ai" style="color: var(--primary); text-decoration: none;">mcp.com.ai</a>
+    </p>
+    
+    <div class="redirect-notice">
+      <div class="spinner"></div>
+      <span>Redirecting you in <span id="countdown">5</span> seconds...</span>
+    </div>
+
+    <div class="card">
+      <h2>
+        <span class="card-icon">📦</span>
+        Quick Installation
+      </h2>
+      <p class="code-comment">Install via npm (recommended):</p>
+      <div class="code-block" onclick="copyToClipboard(this)">
+        <code>npm install -g @rebelion/hapi-mcp</code>
+      </div>
+      
+      <p class="code-comment">Or using Bun:</p>
+      <div class="code-block" onclick="copyToClipboard(this)">
+        <code>bun install -g @rebelion/hapi-mcp</code>
+      </div>
+
+      <p class="code-comment">Or download the installer:</p>
+      <div class="code-block" onclick="copyToClipboard(this)">
+        <code>curl -fsSL https://be.hapi.mcp.com.ai/hapi.sh | sh</code>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>
+        <span class="card-icon">⚡</span>
+        Quick Start
+      </h2>
+      <p class="code-comment">Initialize a new project:</p>
+      <div class="code-block" onclick="copyToClipboard(this)">
+        <code>hapi init my-mcp-server</code>
+      </div>
+
+      <p class="code-comment">Serve an OpenAPI spec:</p>
+      <div class="code-block" onclick="copyToClipboard(this)">
+        <code>hapi serve ./openapi.yaml</code>
+      </div>
+    </div>
+
+    <a href="https://hapi.mcp.com.ai" class="button">
+      Visit HAPI MCP Tools →
+    </a>
+
+    <div class="footer">
+      <p>Not redirected? <a href="https://hapi.mcp.com.ai">Click here</a> to visit HAPI MCP Tools.</p>
+      <p style="margin-top: 1rem;">Made with ❤️ by <a href="https://rebelion.la" target="_blank">La Rebelion Labs</a></p>
+    </div>
+  </div>
+
+  <script>
+    // Countdown timer
+    let seconds = 5;
+    const countdownEl = document.getElementById('countdown');
+    const interval = setInterval(() => {
+      seconds--;
+      if (countdownEl) {
+        countdownEl.textContent = seconds;
+      }
+      if (seconds <= 0) {
+        clearInterval(interval);
+      }
+    }, 1000);
+
+    // Copy to clipboard functionality
+    function copyToClipboard(element) {
+      const code = element.querySelector('code').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        const originalBorder = element.style.borderColor;
+        element.style.borderColor = 'var(--secondary)';
+        
+        // Show copied feedback
+        const originalContent = element.innerHTML;
+        element.innerHTML = '<code>✓ Copied to clipboard!</code>';
+        
+        setTimeout(() => {
+          element.innerHTML = originalContent;
+          element.style.borderColor = originalBorder;
+        }, 1500);
+      }).catch(err => {
+        console.error('Failed to copy:', err);
+      });
+    }
+
+    // Track page view
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'page_view', {
+        page_title: 'HAPI MCP Redirect Page',
+        page_location: window.location.href,
+        page_path: window.location.pathname
+      });
+    }
+  </script>
+</body>
+
+</html>
