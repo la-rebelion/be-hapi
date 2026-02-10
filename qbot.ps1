@@ -1,6 +1,8 @@
 # QBot PowerShell Installer Script
 
 $Repo = "la-rebelion/qbot-cli"
+$LatestUrl = "https://raw.githubusercontent.com/la-rebelion/be-hapi/refs/heads/main/latest"
+$PkgName = "qbot"
 $Binary = "qbot"
 $DefaultVersion = "v0.1.0"
 $Version = $null
@@ -9,7 +11,7 @@ $Version = $null
 function Get-LatestVersion {
     Write-Host "Fetching latest version information..."
     try {
-        $content = (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/$Repo/refs/heads/main/latest" -UseBasicParsing).Content
+        $content = (Invoke-WebRequest -Uri $LatestUrl -UseBasicParsing).Content
 
         if ([string]::IsNullOrWhiteSpace($content)) {
             Write-Host "Could not fetch latest version, falling back to default: $DefaultVersion"
@@ -72,7 +74,7 @@ function Get-Platform {
 # Download and verify the binary
 function Install-Binary {
     $Platform = Get-Platform
-    $BinName = "$Binary-$($Version.TrimStart('v'))-$Platform.exe"
+    $BinName = "$PkgName-$($Version.TrimStart('v'))-$Platform.exe"
     $Archive = "$BinName.gz"
     $Checksum = "$Archive.sha256"
     $BaseUrl = "https://github.com/$Repo/releases/download/$Version"

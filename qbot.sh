@@ -2,18 +2,19 @@
 set -e
 
 REPO="la-rebelion/qbot-cli"
+PKG_NAME="qbot"
 BINARY="qbot"
 DEFAULT_VERSION="v0.1.0"
 
 # Function to fetch the latest version from GitHub
 fetch_latest_version() {
-  echo "Fetching latest version information..."
+  echo "Fetching latest version information..." >&2
   local app_name="${1:-qbot}"
   local latest_content
-  latest_content=$(curl -fsSL "https://raw.githubusercontent.com/$REPO/refs/heads/main/latest" || true)
+  latest_content=$(curl -fsSL "https://raw.githubusercontent.com/la-rebelion/be-hapi/refs/heads/main/latest" || true)
 
   if [[ -z "$latest_content" ]]; then
-    echo "Could not fetch latest version, falling back to default: $DEFAULT_VERSION"
+    echo "Could not fetch latest version, falling back to default: $DEFAULT_VERSION" >&2
     echo "$DEFAULT_VERSION"
     return
   fi
@@ -23,14 +24,14 @@ fetch_latest_version() {
   raw_version=$(printf '%s\n' "$latest_content" | awk -F: -v app="$app_name" '$1==app {print $2}' | head -n1 | tr -d '[:space:]')
 
   if [[ -z "$raw_version" ]]; then
-    echo "No version found for $app_name, falling back to default: $DEFAULT_VERSION"
+    echo "No version found for $app_name, falling back to default: $DEFAULT_VERSION" >&2
     echo "$DEFAULT_VERSION"
   else
     # Normalize to v-prefixed version to match release tags
     if [[ "$raw_version" != v* ]]; then
       raw_version="v${raw_version}"
     fi
-    echo "Latest $app_name version: $raw_version"
+    echo "Latest $app_name version: $raw_version" >&2
     echo "$raw_version"
   fi
 }
@@ -76,9 +77,9 @@ detect_platform() {
 download_and_verify() {
   PLATFORM=$(detect_platform)
   EXT=""
-  BIN_NAME="${BINARY}-${VERSION#v}-${PLATFORM}"
+  BIN_NAME="${PKG_NAME}-${VERSION#v}-${PLATFORM}"
   if [[ "$PLATFORM" == *windows ]]; then
-    BIN_NAME="${BIN_NAME}.exe"
+    BIN_NAME="${PKG_NAME}.exe"
     EXT=".exe"
   fi
 
@@ -99,14 +100,26 @@ download_and_verify() {
   gunzip -c "$ARCHIVE" > "$BINARY$EXT"
   chmod +x "$BINARY$EXT"
 
+  INSTALL_PATH="/usr/local/bin"
   if [[ "$PLATFORM" == *windows ]]; then
-    mv "$BINARY$EXT" "/usr/local/bin/$BINARY$EXT"
+    if ! mv "$BINARY$EXT" "$INSTALL_PATH/$BINARY$EXT" 2>/dev/null; then
+      mkdir -p "$HOME/bin"
+      mv "$BINARY$EXT" "$HOME/bin/$BINARY$EXT"
+      INSTALL_PATH="$HOME/bin"
+      echo "Installed to $INSTALL_PATH (no write permission for /usr/local/bin)"
+    fi
   else
-    mv "$BINARY$EXT" "/usr/local/bin/$BINARY"
+    if ! mv "$BINARY$EXT" "$INSTALL_PATH/$BINARY" 2>/dev/null; then
+      mkdir -p "$HOME/bin"
+      mv "$BINARY$EXT" "$HOME/bin/$BINARY"
+      INSTALL_PATH="$HOME/bin"
+      echo "Installed to $INSTALL_PATH (no write permission for /usr/local/bin)"
+    fi
   fi
 
   echo "$BINARY installed successfully!"
-  "/usr/local/bin/$BINARY$EXT" --version || true
+  echo "Testing installation... version output below:"
+  "$INSTALL_PATH/$BINARY$EXT" --version || true
 }
 
 setup_env() {
@@ -126,3 +139,7 @@ example_commands() {
 download_and_verify
 setup_env
 example_commands
+cleanup() {
+  rm -f "${BIN_NAME}.gz" "${BIN_NAME}.gz.sha256"
+}
+trap cleanup EXIT

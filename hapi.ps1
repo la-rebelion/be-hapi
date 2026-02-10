@@ -1,15 +1,17 @@
 # HAPI PowerShell Installer Script
 
 $Repo = "la-rebelion/hapimcp"
+$LatestUrl = "https://raw.githubusercontent.com/la-rebelion/be-hapi/refs/heads/main/latest"
+$PkgName = "@la-rebelion-hapimcp"
 $Binary = "hapi"
-$DefaultVersion = "v0.5.0"
+$DefaultVersion = "v0.5.1"
 $Version = $null
 
 # Function to fetch the latest version from GitHub
 function Get-LatestVersion {
     Write-Host "Fetching latest version information..."
     try {
-        $content = (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/$Repo/refs/heads/main/latest" -UseBasicParsing).Content
+        $content = (Invoke-WebRequest -Uri $LatestUrl -UseBasicParsing).Content
 
         if ([string]::IsNullOrWhiteSpace($content)) {
             Write-Host "Could not fetch latest version, falling back to default: $DefaultVersion"
@@ -72,7 +74,7 @@ function Get-Platform {
 # Download and verify the binary
 function Install-Binary {
     $Platform = Get-Platform
-    $BinName = "$Binary-$($Version.TrimStart('v'))-$Platform.exe"
+    $BinName = "$PkgName-$($Version.TrimStart('v'))-$Platform.exe"
     $Archive = "$BinName.gz"
     $Checksum = "$Archive.sha256"
     $BaseUrl = "https://github.com/$Repo/releases/download/$Version"
