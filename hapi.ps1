@@ -2,9 +2,9 @@
 
 $Repo = "la-rebelion/hapimcp"
 $LatestUrl = "https://raw.githubusercontent.com/la-rebelion/be-hapi/refs/heads/main/latest"
-$PkgName = "@la-rebelion-hapimcp"
+$PkgName = "@la-rebelion-hapi"
 $Binary = "hapi"
-$DefaultVersion = "v0.5.1"
+$DefaultVersion = "v0.7.1"
 $Version = $null
 
 # Function to fetch the latest version from GitHub

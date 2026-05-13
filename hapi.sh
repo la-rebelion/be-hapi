@@ -2,9 +2,9 @@
 set -e
 
 REPO="la-rebelion/hapimcp"
-PKG_NAME="@la-rebelion-hapimcp"
+PKG_NAME="@la-rebelion-hapi"
 BINARY="hapi"
-DEFAULT_VERSION="v0.5.1"
+DEFAULT_VERSION="v0.7.1"
 
 # Function to fetch the latest version from GitHub
 fetch_latest_version() {
