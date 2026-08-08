@@ -54,6 +54,14 @@ if [[ -z "$VERSION" ]]; then
   VERSION=$(fetch_latest_version "hapi" || echo "$DEFAULT_VERSION")
 fi
 
+# Detect whether the host CPU exposes AVX2. The default Linux x86_64 build is compiled
+# with AVX2 codegen for performance; VMs/hypervisors that don't pass AVX2 through to the
+# guest crash it with "Illegal instruction (core dumped)" on first use. Fall back to the
+# baseline (no-AVX2) build in that case.
+supports_avx2() {
+  [[ -r /proc/cpuinfo ]] && grep -qo '\bavx2\b' /proc/cpuinfo
+}
+
 detect_platform() {
   OS=$(uname | tr '[:upper:]' '[:lower:]')
   ARCH=$(uname -m)
@@ -71,7 +79,13 @@ detect_platform() {
     *) echo "Unsupported OS: $OS"; exit 1 ;;
   esac
 
-  echo "${ARCH}-${OS}"
+  local suffix=""
+  if [[ "$OS" == "linux" && "$ARCH" == "x86_64" ]] && ! supports_avx2; then
+    echo "CPU does not support AVX2; using the baseline build for compatibility." >&2
+    suffix="-baseline"
+  fi
+
+  echo "${ARCH}-${OS}${suffix}"
 }
 
 download_and_verify() {
