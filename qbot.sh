@@ -54,6 +54,25 @@ if [[ -z "$VERSION" ]]; then
   VERSION=$(fetch_latest_version "qbot" || echo "$DEFAULT_VERSION")
 fi
 
+# Verify the requested version actually exists as a GitHub release before attempting download
+verify_version_exists() {
+  local api_url="https://api.github.com/repos/$REPO/releases/tags/$VERSION"
+  local http_code
+  http_code=$(curl -s -o /dev/null -w "%{http_code}" "$api_url")
+
+  if [[ "$http_code" == "404" ]]; then
+    echo "Error: Version '$VERSION' was not found in the '$REPO' repository." >&2
+    echo "Check the available releases at: https://github.com/$REPO/releases" >&2
+    exit 1
+  elif [[ "$http_code" != "200" ]]; then
+    echo "Error: Could not verify version '$VERSION' (GitHub API returned HTTP $http_code)." >&2
+    echo "This may be a network issue or GitHub API rate limiting. Try again shortly." >&2
+    exit 1
+  fi
+}
+
+verify_version_exists
+
 detect_platform() {
   OS=$(uname | tr '[:upper:]' '[:lower:]')
   ARCH=$(uname -m)
@@ -90,11 +109,25 @@ download_and_verify() {
   echo "Installing $BINARY version $VERSION for $PLATFORM"
   echo "Downloading $ARCHIVE and $CHECKSUM from $BASE_URL"
 
-  curl -fsSL "$BASE_URL/$ARCHIVE" -o "$ARCHIVE"
-  curl -fsSL "$BASE_URL/$CHECKSUM" -o "$CHECKSUM"
+  if ! curl -fsSL "$BASE_URL/$ARCHIVE" -o "$ARCHIVE"; then
+    echo "Error: Failed to download '$ARCHIVE' for version '$VERSION'." >&2
+    echo "URL attempted: $BASE_URL/$ARCHIVE" >&2
+    echo "This usually means there is no build for platform '$PLATFORM' in that release." >&2
+    echo "Check available assets at: https://github.com/$REPO/releases/tag/$VERSION" >&2
+    exit 1
+  fi
+
+  if ! curl -fsSL "$BASE_URL/$CHECKSUM" -o "$CHECKSUM"; then
+    echo "Error: Failed to download checksum file '$CHECKSUM' for version '$VERSION'." >&2
+    echo "URL attempted: $BASE_URL/$CHECKSUM" >&2
+    exit 1
+  fi
 
   echo "Verifying checksum..."
-  sha256sum -c "$CHECKSUM"
+  if ! sha256sum -c "$CHECKSUM"; then
+    echo "Error: Checksum verification failed for '$ARCHIVE'. The downloaded file may be corrupted." >&2
+    exit 1
+  fi
 
   echo "Extracting binary..."
   gunzip -c "$ARCHIVE" > "$BINARY$EXT"

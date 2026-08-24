@@ -57,6 +57,27 @@ if (-not $Version) {
     $Version = Get-LatestVersion
 }
 
+# Verify the requested version actually exists as a GitHub release before attempting download
+function Confirm-VersionExists {
+    $ApiUrl = "https://api.github.com/repos/$Repo/releases/tags/$Version"
+    try {
+        Invoke-RestMethod -Uri $ApiUrl -UseBasicParsing -Headers @{ "User-Agent" = "hapi-installer" } | Out-Null
+    } catch {
+        $StatusCode = $null
+        if ($_.Exception.Response) {
+            $StatusCode = [int]$_.Exception.Response.StatusCode
+        }
+        if ($StatusCode -eq 404) {
+            Write-Error "Version '$Version' was not found in the '$Repo' repository. Check available releases at: https://github.com/$Repo/releases"
+        } else {
+            Write-Error "Could not verify version '$Version' (HTTP $StatusCode). This may be a network issue or GitHub API rate limiting."
+        }
+        exit 1
+    }
+}
+
+Confirm-VersionExists
+
 # Detect platform
 function Get-Platform {
     $arch = [System.Environment]::GetEnvironmentVariable("PROCESSOR_ARCHITECTURE")
@@ -89,9 +110,15 @@ function Install-Binary {
     # Download files
     $ArchivePath = Join-Path $TempDir $Archive
     $ChecksumPath = Join-Path $TempDir $Checksum
-    
-    Invoke-WebRequest -Uri "$BaseUrl/$Archive" -OutFile $ArchivePath -UseBasicParsing
-    Invoke-WebRequest -Uri "$BaseUrl/$Checksum" -OutFile $ChecksumPath -UseBasicParsing
+
+    try {
+        Invoke-WebRequest -Uri "$BaseUrl/$Archive" -OutFile $ArchivePath -UseBasicParsing
+        Invoke-WebRequest -Uri "$BaseUrl/$Checksum" -OutFile $ChecksumPath -UseBasicParsing
+    } catch {
+        Write-Error "Failed to download version '$Version' for platform '$Platform'. This usually means there is no build for your platform in that release. Check available assets at: https://github.com/$Repo/releases/tag/$Version"
+        Remove-Item -Path $TempDir -Recurse -Force -ErrorAction SilentlyContinue
+        exit 1
+    }
 
     # Verify checksum
     Write-Host "Verifying checksum..."
@@ -99,7 +126,8 @@ function Install-Binary {
     $ActualChecksum = (Get-FileHash -Algorithm SHA256 -Path $ArchivePath).Hash.ToLower()
     
     if ($ExpectedChecksum -ne $ActualChecksum) {
-        Write-Error "Checksum verification failed. Expected: $ExpectedChecksum, Got: $ActualChecksum"
+        Write-Error "Checksum verification failed. Expected: $ExpectedChecksum, Got: $ActualChecksum. The downloaded file may be corrupted."
+        Remove-Item -Path $TempDir -Recurse -Force -ErrorAction SilentlyContinue
         exit 1
     }
     
