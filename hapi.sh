@@ -1,10 +1,20 @@
 #!/usr/bin/env bash
 set -e
 
-REPO="la-rebelion/hapimcp"
-PKG_NAME="@la-rebelion-hapi"
 BINARY="hapi"
-DEFAULT_VERSION="v0.7.1"
+
+# v0.x releases live in the legacy repo; v1.x+ releases moved to a new repo
+LEGACY_REPO="la-rebelion/hapimcp"
+LEGACY_PKG_NAME="@la-rebelion-$BINARY"
+LEGACY_DEFAULT_VERSION="v0.7.1"
+
+NEW_REPO="mcp-com-ai/be-hapi"
+NEW_PKG_NAME="@mcp-com-ai-$BINARY"
+NEW_DEFAULT_VERSION="v1.0.0-beta.0823"
+
+REPO="$LEGACY_REPO"
+PKG_NAME="$LEGACY_PKG_NAME"
+DEFAULT_VERSION="$LEGACY_DEFAULT_VERSION"
 
 # Function to fetch the latest version from GitHub
 fetch_latest_version() {
@@ -52,6 +62,20 @@ done
 # If no version specified, fetch the latest version of hapi
 if [[ -z "$VERSION" ]]; then
   VERSION=$(fetch_latest_version "hapi" || echo "$DEFAULT_VERSION")
+fi
+
+# Allow shorthand "1"/"v1" to mean the latest v1.x+ release
+if [[ "$VERSION" == "1" || "$VERSION" == "v1" ]]; then
+  VERSION="$NEW_DEFAULT_VERSION"
+fi
+
+# v1.x+ releases are published in a different GitHub repo; switch targets accordingly
+MAJOR_VERSION="${VERSION#v}"
+MAJOR_VERSION="${MAJOR_VERSION%%.*}"
+if [[ "$MAJOR_VERSION" =~ ^[0-9]+$ ]] && (( MAJOR_VERSION >= 1 )); then
+  REPO="$NEW_REPO"
+  PKG_NAME="$NEW_PKG_NAME"
+  echo "Version '$VERSION' is v1+, using repository: $REPO" >&2
 fi
 
 # Verify the requested version actually exists as a GitHub release before attempting download

@@ -1,10 +1,20 @@
 # HAPI PowerShell Installer Script
 
-$Repo = "la-rebelion/hapimcp"
 $LatestUrl = "https://raw.githubusercontent.com/la-rebelion/be-hapi/refs/heads/main/latest"
-$PkgName = "@la-rebelion-hapi"
 $Binary = "hapi"
-$DefaultVersion = "v0.7.1"
+
+# v0.x releases live in the legacy repo; v1.x+ releases moved to a new repo
+$LegacyRepo = "la-rebelion/hapimcp"
+$LegacyPkgName = "@la-rebelion-$Binary"
+$LegacyDefaultVersion = "v0.7.1"
+
+$NewRepo = "mcp-com-ai/be-hapi"
+$NewPkgName = "@mcp-com-ai-$Binary"
+$NewDefaultVersion = "v1.0.0-beta.0823"
+
+$Repo = $LegacyRepo
+$PkgName = $LegacyPkgName
+$DefaultVersion = $LegacyDefaultVersion
 $Version = $null
 
 # Function to fetch the latest version from GitHub
@@ -55,6 +65,19 @@ for ($i = 0; $i -lt $args.Count; $i++) {
 # If no version specified, fetch the latest version
 if (-not $Version) {
     $Version = Get-LatestVersion
+}
+
+# Allow shorthand "1"/"v1" to mean the latest v1.x+ release
+if ($Version -eq "1" -or $Version -eq "v1") {
+    $Version = $NewDefaultVersion
+}
+
+# v1.x+ releases are published in a different GitHub repo; switch targets accordingly
+$MajorVersion = $Version.TrimStart('v').Split('.')[0]
+if ($MajorVersion -match '^\d+$' -and [int]$MajorVersion -ge 1) {
+    $Repo = $NewRepo
+    $PkgName = $NewPkgName
+    Write-Host "Version '$Version' is v1+, using repository: $Repo"
 }
 
 # Verify the requested version actually exists as a GitHub release before attempting download
