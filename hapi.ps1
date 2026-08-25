@@ -8,7 +8,7 @@ $LegacyRepo = "la-rebelion/hapimcp"
 $LegacyPkgName = "@la-rebelion-$Binary"
 $LegacyDefaultVersion = "v0.7.1"
 
-$NewRepo = "mcp-com-ai/be-hapi"
+$NewRepo = "mcp-com-ai/hapimcp"
 $NewPkgName = "@mcp-com-ai-$Binary"
 $NewDefaultVersion = "v1.0.0-beta.0823"
 
@@ -17,39 +17,43 @@ $PkgName = $LegacyPkgName
 $DefaultVersion = $LegacyDefaultVersion
 $Version = $null
 
-# Function to fetch the latest version from GitHub
+# Function to fetch the latest version from GitHub for a given channel key (e.g. "hapi", "hapiv1")
 function Get-LatestVersion {
-    Write-Host "Fetching latest version information..."
+    param(
+        [string]$AppName = "hapi",
+        [string]$Fallback = $LegacyDefaultVersion
+    )
+    Write-Host "Fetching latest version information for $AppName..."
     try {
         $content = (Invoke-WebRequest -Uri $LatestUrl -UseBasicParsing).Content
 
         if ([string]::IsNullOrWhiteSpace($content)) {
-            Write-Host "Could not fetch latest version, falling back to default: $DefaultVersion"
-            return $DefaultVersion
+            Write-Host "Could not fetch latest version, falling back to default: $Fallback"
+            return $Fallback
         }
 
-        # Extract version for 'hapi' from lines like: name:version
-        $line = ($content -split "`n") | Where-Object { $_ -match '^\s*hapi\s*:' } | Select-Object -First 1
+        # Extract version for the requested app from lines like: name:version (exact key match)
+        $line = ($content -split "`n") | Where-Object { ($_ -split ':')[0].Trim() -eq $AppName } | Select-Object -First 1
         if (-not $line) {
-            Write-Host "No version found for hapi, falling back to default: $DefaultVersion"
-            return $DefaultVersion
+            Write-Host "No version found for $AppName, falling back to default: $Fallback"
+            return $Fallback
         }
 
         $rawVersion = ($line -split ':')[1].Trim()
         if ([string]::IsNullOrWhiteSpace($rawVersion)) {
-            Write-Host "No version found for hapi, falling back to default: $DefaultVersion"
-            return $DefaultVersion
+            Write-Host "No version found for $AppName, falling back to default: $Fallback"
+            return $Fallback
         }
 
         if (-not $rawVersion.StartsWith('v')) {
             $rawVersion = "v$rawVersion"
         }
 
-        Write-Host "Latest hapi version: $rawVersion"
+        Write-Host "Latest $AppName version: $rawVersion"
         return $rawVersion
     } catch {
-        Write-Host "Error fetching latest version, falling back to default: $DefaultVersion"
-        return $DefaultVersion
+        Write-Host "Error fetching latest version, falling back to default: $Fallback"
+        return $Fallback
     }
 }
 
@@ -62,14 +66,14 @@ for ($i = 0; $i -lt $args.Count; $i++) {
     }
 }
 
-# If no version specified, fetch the latest version
+# If no version specified, fetch the latest v0.x version
 if (-not $Version) {
-    $Version = Get-LatestVersion
+    $Version = Get-LatestVersion -AppName "hapi" -Fallback $LegacyDefaultVersion
 }
 
-# Allow shorthand "1"/"v1" to mean the latest v1.x+ release
+# Allow shorthand "1"/"v1" to fetch the latest v1.x+ release, tracked under the "hapiv1" channel key
 if ($Version -eq "1" -or $Version -eq "v1") {
-    $Version = $NewDefaultVersion
+    $Version = Get-LatestVersion -AppName "hapiv1" -Fallback $NewDefaultVersion
 }
 
 # v1.x+ releases are published in a different GitHub repo; switch targets accordingly

@@ -8,7 +8,7 @@ LEGACY_REPO="la-rebelion/hapimcp"
 LEGACY_PKG_NAME="@la-rebelion-$BINARY"
 LEGACY_DEFAULT_VERSION="v0.7.1"
 
-NEW_REPO="mcp-com-ai/be-hapi"
+NEW_REPO="mcp-com-ai/hapimcp"
 NEW_PKG_NAME="@mcp-com-ai-$BINARY"
 NEW_DEFAULT_VERSION="v1.0.0-beta.0823"
 
@@ -18,14 +18,15 @@ DEFAULT_VERSION="$LEGACY_DEFAULT_VERSION"
 
 # Function to fetch the latest version from GitHub
 fetch_latest_version() {
-  echo "Fetching latest version information..." >&2
   local app_name="${1:-hapi}"
+  local fallback_version="${2:-$DEFAULT_VERSION}"
+  echo "Fetching latest version information for $app_name..." >&2
   local latest_content
   latest_content=$(curl -fsSL "https://raw.githubusercontent.com/la-rebelion/be-hapi/refs/heads/main/latest" || true)
 
   if [[ -z "$latest_content" ]]; then
-    echo "Could not fetch latest version, falling back to default: $DEFAULT_VERSION" >&2
-    echo "$DEFAULT_VERSION"
+    echo "Could not fetch latest version, falling back to default: $fallback_version" >&2
+    echo "$fallback_version"
     return
   fi
 
@@ -34,8 +35,8 @@ fetch_latest_version() {
   raw_version=$(printf '%s\n' "$latest_content" | awk -F: -v app="$app_name" '$1==app {print $2}' | head -n1 | tr -d '[:space:]')
 
   if [[ -z "$raw_version" ]]; then
-    echo "No version found for $app_name, falling back to default: $DEFAULT_VERSION" >&2
-    echo "$DEFAULT_VERSION"
+    echo "No version found for $app_name, falling back to default: $fallback_version" >&2
+    echo "$fallback_version"
   else
     # Normalize to v-prefixed version to match release tags
     if [[ "$raw_version" != v* ]]; then
@@ -59,14 +60,14 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# If no version specified, fetch the latest version of hapi
+# If no version specified, fetch the latest v0.x version of hapi
 if [[ -z "$VERSION" ]]; then
-  VERSION=$(fetch_latest_version "hapi" || echo "$DEFAULT_VERSION")
+  VERSION=$(fetch_latest_version "hapi" "$LEGACY_DEFAULT_VERSION")
 fi
 
-# Allow shorthand "1"/"v1" to mean the latest v1.x+ release
+# Allow shorthand "1"/"v1" to fetch the latest v1.x+ release, tracked under the "hapiv1" channel key
 if [[ "$VERSION" == "1" || "$VERSION" == "v1" ]]; then
-  VERSION="$NEW_DEFAULT_VERSION"
+  VERSION=$(fetch_latest_version "hapiv1" "$NEW_DEFAULT_VERSION")
 fi
 
 # v1.x+ releases are published in a different GitHub repo; switch targets accordingly
