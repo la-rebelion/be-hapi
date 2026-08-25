@@ -109,10 +109,16 @@ supports_avx2() {
 detect_platform() {
   OS=$(uname | tr '[:upper:]' '[:lower:]')
   ARCH=$(uname -m)
+  local is_v1=false
+  local v1_arch
+
+  if [[ "$MAJOR_VERSION" =~ ^[0-9]+$ ]] && (( MAJOR_VERSION >= 1 )); then
+    is_v1=true
+  fi
 
   case $ARCH in
-    x86_64) ARCH="x86_64" ;;
-    arm64|aarch64) ARCH="aarch64" ;;
+    x86_64) ARCH="x86_64"; v1_arch="x64" ;;
+    arm64|aarch64) ARCH="aarch64"; v1_arch="arm64" ;;
     *) echo "Unsupported architecture: $ARCH"; exit 1 ;;
   esac
 
@@ -127,6 +133,16 @@ detect_platform() {
   if [[ "$OS" == "linux" && "$ARCH" == "x86_64" ]] && ! supports_avx2; then
     echo "CPU does not support AVX2; using the baseline build for compatibility." >&2
     suffix="-baseline"
+  fi
+
+  if [[ "$is_v1" == true ]]; then
+    if [[ "$OS" == "linux" && "$ARCH" == "x86_64" && -z "$suffix" ]]; then
+      suffix="-modern"
+    elif [[ "$OS" == "linux" && "$ARCH" == "aarch64" ]]; then
+      suffix="-musl"
+    fi
+    echo "${OS}-${v1_arch}${suffix}"
+    return
   fi
 
   echo "${ARCH}-${OS}${suffix}"

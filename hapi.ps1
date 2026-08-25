@@ -108,10 +108,18 @@ Confirm-VersionExists
 # Detect platform
 function Get-Platform {
     $arch = [System.Environment]::GetEnvironmentVariable("PROCESSOR_ARCHITECTURE")
+    $majorVersion = $Version.TrimStart('v').Split('.')[0]
+    $isV1 = $majorVersion -match '^\d+$' -and [int]$majorVersion -ge 1
     
     if ($arch -eq "AMD64") {
+        if ($isV1) {
+            return "windows-x64"
+        }
         return "x86_64-windows"
     } elseif ($arch -eq "ARM64") {
+        if ($isV1) {
+            return "windows-arm64"
+        }
         return "aarch64-windows"
     } else {
         Write-Error "Unsupported architecture: $arch"
