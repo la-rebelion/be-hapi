@@ -281,19 +281,24 @@
         <span class="card-icon">📦</span>
         Quick Installation
       </h2>
-      <p class="code-comment">Install via npm (recommended):</p>
+      <p class="code-comment">Install the v1 package via npm:</p>
       <div class="code-block" onclick="copyToClipboard(this)">
-        <code>npm install -g @rebelion/hapi-mcp</code>
+        <code>npm install -g @mcp-com-ai/hapi</code>
       </div>
       
       <p class="code-comment">Or using Bun:</p>
       <div class="code-block" onclick="copyToClipboard(this)">
-        <code>bun install -g @rebelion/hapi-mcp</code>
+        <code>bun install -g @mcp-com-ai/hapi</code>
       </div>
 
-      <p class="code-comment">Or download the installer:</p>
+      <p class="code-comment">Or download the v1 installer on Linux or macOS:</p>
       <div class="code-block" onclick="copyToClipboard(this)">
-        <code>curl -fsSL https://get.mcp.com.ai/hapi.sh | sh</code>
+        <code>curl -fsSL https://get.mcp.com.ai/hapi.sh | sh -s -- --version v1</code>
+      </div>
+
+      <p class="code-comment">Or install v1 with PowerShell:</p>
+      <div class="code-block" onclick="copyToClipboard(this)">
+        <code>$s = irm https://get.mcp.com.ai/hapi.ps1; &amp; ([scriptblock]::Create($s)) --version v1</code>
       </div>
     </div>
 

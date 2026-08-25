@@ -10,5 +10,5 @@ curl -fsSL https://get.mcp.com.ai/hapi.sh | bash -s -- --version v1
 **Windows**
 
 ```shell
-irm https://get.mcp.com.ai/hapi.ps1 | iex -Version v1
+& ([scriptblock]::Create((irm https://get.mcp.com.ai/hapi.ps1))) --version v1
 ```
