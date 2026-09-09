@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-REPO="clawne-me/loopback-helper"
+REPO="clawne-me/cli"
 PKG_NAME="clawne-me"
 BINARY="clawne-me"
 DEFAULT_VERSION="v0.1.0"
