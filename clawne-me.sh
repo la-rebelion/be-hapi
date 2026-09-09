@@ -54,6 +54,11 @@ if [[ -z "$VERSION" ]]; then
   VERSION=$(fetch_latest_version "clawne-me" || echo "$DEFAULT_VERSION")
 fi
 
+# Normalize user-supplied --version (e.g. "0.1.0") to match release tags (e.g. "v0.1.0")
+if [[ "$VERSION" != v* ]]; then
+  VERSION="v${VERSION}"
+fi
+
 # Verify the requested version actually exists as a GitHub release before attempting download
 verify_version_exists() {
   local api_url="https://api.github.com/repos/$REPO/releases/tags/$VERSION"

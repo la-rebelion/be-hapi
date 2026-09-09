@@ -1,6 +1,6 @@
 # clawne-me PowerShell Installer Script
 
-$Repo = "clawne-me/loopback-helper"
+$Repo = "clawne-me/cli"
 $LatestUrl = "https://raw.githubusercontent.com/la-rebelion/be-hapi/refs/heads/main/latest"
 $PkgName = "clawne-me"
 $Binary = "clawne-me"
@@ -55,6 +55,11 @@ for ($i = 0; $i -lt $args.Count; $i++) {
 # If no version specified, fetch the latest version
 if (-not $Version) {
     $Version = Get-LatestVersion
+}
+
+# Normalize user-supplied --version (e.g. "0.1.0") to match release tags (e.g. "v0.1.0")
+if (-not $Version.StartsWith('v')) {
+    $Version = "v$Version"
 }
 
 # Verify the requested version actually exists as a GitHub release before attempting download
